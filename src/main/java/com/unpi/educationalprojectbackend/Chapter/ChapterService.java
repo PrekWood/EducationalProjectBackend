@@ -72,6 +72,7 @@ public class ChapterService {
         List<TestQuestion> testQuestionList = repository.getTestQuestions(idChapter);
         for (TestQuestion testQuestion : testQuestionList) {
             testQuestion.setChapter(null);
+            testQuestion.setCorrectAnswer(null);
         }
 
         return testQuestionList;

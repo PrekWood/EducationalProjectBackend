@@ -8,6 +8,7 @@ import com.unpi.educationalprojectbackend.SubChapter.SubChapterService;
 import com.unpi.educationalprojectbackend.SubChapter.requests.SubChapterUpdateRequest;
 import com.unpi.educationalprojectbackend.TestAnswer.TestAnswer;
 import com.unpi.educationalprojectbackend.TestAnswer.TestAnswerService;
+import com.unpi.educationalprojectbackend.TestAnswer.request.TestAnswerCreateRequest;
 import com.unpi.educationalprojectbackend.TestQuestion.requests.TestQuestionCreateRequest;
 import com.unpi.educationalprojectbackend.User.User;
 import com.unpi.educationalprojectbackend.User.UserService;
@@ -60,12 +61,20 @@ public class TestQuestionController extends ResponseHandler {
         testQuestionService.save(question);
 
         // Create Answers
-        for (TestAnswer requestAnswer : requestBody.getAnswers()) {
+        TestAnswer correctAnswer = null;
+        for (TestAnswerCreateRequest requestAnswer : requestBody.getAnswers()) {
             TestAnswer answer = new TestAnswer();
             answer.setQuestion(question);
             answer.setAnswer(requestAnswer.getAnswer());
             testAnswerService.save(answer);
+
+            if(requestAnswer.isCorrect()){
+                correctAnswer = answer;
+            }
         }
+
+        question.setCorrectAnswer(correctAnswer);
+        testQuestionService.save(question);
 
         return createSuccessResponse(HttpStatus.CREATED);
     }
