@@ -27,6 +27,8 @@ public class UserProgress {
 
     private TYPE nextObjectType;
 
+    private boolean showFinishedModal = false;
+
     @Transient
     private List<ChapterGrade> chaptersPassed;
 }

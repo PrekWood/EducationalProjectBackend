@@ -52,7 +52,6 @@ public class JWTLoginFilter extends UsernamePasswordAuthenticationFilter {
         tokenJson.put("token",access_token);
         tokenJson.put("isAdmin", user.getRole() == UserRole.ADMIN);
         response.setContentType(APPLICATION_JSON_VALUE);
-        System.out.println(tokenJson.toString());
         new ObjectMapper().writeValue(response.getOutputStream(), tokenJson);
     }
 

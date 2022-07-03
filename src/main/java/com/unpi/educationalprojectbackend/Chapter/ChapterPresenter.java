@@ -28,6 +28,16 @@ public class ChapterPresenter implements ModelPresenter<Chapter> {
         presented.put("dateAdd",formatter.format(chapter.getDateAdd()));
         presented.put("subChapters",chapter.getSubChapterList());
         presented.put("testQuestions",chapter.getTestQuestions());
+        if(chapter.getBestTestAttempt()!=null){
+            presented.put("bestAttempt",chapter.getBestTestAttempt());
+        }else{
+            presented.put("bestAttempt",null);
+        }
+        if(chapter.getCompetionRate()!=null){
+            presented.put("completionRate",chapter.getCompetionRate());
+        }else{
+            presented.put("completionRate",null);
+        }
 
         return presented;
     }

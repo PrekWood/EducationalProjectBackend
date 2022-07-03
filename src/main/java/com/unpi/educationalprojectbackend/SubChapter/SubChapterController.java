@@ -44,6 +44,7 @@ public class SubChapterController extends ResponseHandler {
             return createErrorResponse("Το id του κεφαλαίου δεν είναι σωστό");
         }
 
+
         // Create subchapter
         SubChapter subChapter = new SubChapter();
         subChapter.setChapter(chapter);
@@ -57,7 +58,7 @@ public class SubChapterController extends ResponseHandler {
 
     @PutMapping("subchapter/{idSubChapter}/")
     public ResponseEntity<?> rename(
-            @RequestBody SubChapterUpdateRequest requestBody,
+            @RequestBody SubChapterCreateRequest requestBody,
             @PathVariable Long idSubChapter
     ) {
 
@@ -75,8 +76,12 @@ public class SubChapterController extends ResponseHandler {
             return createErrorResponse("Το id του κεφαλαίου δεν είναι σωστό");
         }
         subChapter.setName(requestBody.getName());
+        subChapter.setTheory(requestBody.getTheory());
+        subChapter.setExamples(requestBody.getExamples());
         subChapterService.save(subChapter);
 
+
+        System.out.println(requestBody.getTheory());
 
         return createSuccessResponse(subChapter);
     }

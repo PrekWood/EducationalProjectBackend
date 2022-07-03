@@ -9,4 +9,5 @@ import lombok.ToString;
 @ToString
 public class SubChapterUpdateRequest {
     private String name;
+    private String the;
 }

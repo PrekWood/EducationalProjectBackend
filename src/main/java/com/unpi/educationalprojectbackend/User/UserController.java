@@ -5,6 +5,7 @@ import com.unpi.educationalprojectbackend.Chapter.ChapterService;
 import com.unpi.educationalprojectbackend.ChapterGrade.enums.TYPE;
 import com.unpi.educationalprojectbackend.SharedClasses.ResponseHandler;
 import com.unpi.educationalprojectbackend.SubChapter.SubChapter;
+import com.unpi.educationalprojectbackend.TestQuestion.enums.QuestionErrorType;
 import com.unpi.educationalprojectbackend.User.exceptions.EmailAlreadyBeingUsedUserException;
 import com.unpi.educationalprojectbackend.User.requests.RegistrationRequest;
 import com.unpi.educationalprojectbackend.UserProgress.UserProgress;
@@ -96,6 +97,18 @@ public class UserController extends ResponseHandler {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.present(newUser));
     }
 
+
+    @GetMapping("user/errors-statistics")
+    public ResponseEntity<?> getUserErrorStatistics() {
+        // Search for user
+        User loggedInUser = userService.loadUserFromJwt();
+        if (loggedInUser == null) {
+            return createErrorResponse(HttpStatus.FORBIDDEN, "You are not loged in");
+        }
+
+        QuestionErrorType errorType = userProgressService.getTypeOfMostErrors(loggedInUser);
+        return createSuccessResponse(errorType);
+    }
 
 }
 

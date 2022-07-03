@@ -105,4 +105,80 @@ public class TestQuestionController extends ResponseHandler {
 
         return createSuccessResponse();
     }
+
+
+    @GetMapping("question/{idQuestion}")
+    public ResponseEntity<?> getDetails(@PathVariable Long idQuestion) {
+
+        // Search for user
+        User loggedInUser = userService.loadUserFromJwt();
+        if (loggedInUser == null) {
+            return createErrorResponse(HttpStatus.FORBIDDEN, "Δεν είστε συνδεδεμένος");
+        }
+
+        // Search for chapter
+        TestQuestion question = null;
+        try {
+            question = testQuestionService.find(idQuestion);
+        } catch (ObjectNotFoundException e) {
+            return createErrorResponse("Το id του κεφαλαίου δεν είναι σωστό");
+        }
+
+        List<TestAnswer> testAnswerList = testQuestionService.getTestAnswers(question);
+        for (TestAnswer testAnswer : testAnswerList) {
+            testAnswer.setQuestion(null);
+        }
+        question.setAnswerList(testAnswerList);
+
+        return createSuccessResponse(question);
+    }
+
+    @PutMapping("question/{idQuestion}")
+    public ResponseEntity<?> update(@PathVariable Long idQuestion, @RequestBody TestQuestionCreateRequest requestBody) {
+
+        // Search for user
+        User loggedInUser = userService.loadUserFromJwt();
+        if (loggedInUser == null) {
+            return createErrorResponse(HttpStatus.FORBIDDEN, "Δεν είστε συνδεδεμένος");
+        }
+
+        // Search for chapter
+        TestQuestion question = null;
+        try {
+            question = testQuestionService.find(idQuestion);
+        } catch (ObjectNotFoundException e) {
+            return createErrorResponse("Το id του κεφαλαίου δεν είναι σωστό");
+        }
+
+        // Update Question
+        question.setQuestion(requestBody.getQuestion());
+        question.setType(requestBody.getType());
+        question.setDifficulty(requestBody.getDifficulty());
+        question.setErrorType(requestBody.getErrorType());
+        testQuestionService.save(question);
+
+        // Delete old Answers
+        List<TestAnswer> testAnswerList = testQuestionService.getTestAnswers(question);
+        for (TestAnswer testAnswer : testAnswerList) {
+            testAnswerService.delete(testAnswer);
+        }
+
+        // Create Answers
+        TestAnswer correctAnswer = null;
+        for (TestAnswerCreateRequest requestAnswer : requestBody.getAnswers()) {
+            TestAnswer answer = new TestAnswer();
+            answer.setQuestion(question);
+            answer.setAnswer(requestAnswer.getAnswer());
+            testAnswerService.save(answer);
+
+            if(requestAnswer.isCorrect()){
+                correctAnswer = answer;
+            }
+        }
+
+        question.setCorrectAnswer(correctAnswer);
+        testQuestionService.save(question);
+
+        return createSuccessResponse();
+    }
 }

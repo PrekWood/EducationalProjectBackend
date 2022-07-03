@@ -2,8 +2,10 @@ package com.unpi.educationalprojectbackend.UserProgress;
 
 
 import com.unpi.educationalprojectbackend.ChapterGrade.ChapterGrade;
-import com.unpi.educationalprojectbackend.ChapterGrade.enums.TYPE;
-import com.unpi.educationalprojectbackend.SubChapter.SubChapter;
+import com.unpi.educationalprojectbackend.TestAnswer.TestAnswer;
+import com.unpi.educationalprojectbackend.TestAttempt.TestAttempt;
+import com.unpi.educationalprojectbackend.TestAttempt.TestAttemptService;
+import com.unpi.educationalprojectbackend.TestQuestion.enums.QuestionErrorType;
 import com.unpi.educationalprojectbackend.User.User;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.util.List;
 public class UserProgressService {
     private final UserProgressRepository repository;
     private final UserProgressPresenter presenter;
+    private final TestAttemptService testAttemptService;
 
     public UserProgress save(UserProgress subChapter) {
         return repository.save(subChapter);
@@ -42,8 +45,19 @@ public class UserProgressService {
     public boolean isSubChapterPassed(Long idSubChapter, Long idProgress){
         return repository.getCountOfSubChapterPassed(idSubChapter, idProgress) > 0;
     }
+    public boolean isChapterIntroPassed(Long idChapter, Long idProgress){
+        return repository.getCountOfChapterIntroPassed(idChapter, idProgress) > 0;
+    }
     public boolean isChapterTestPassed(Long idChapter, Long idProgress){
         return repository.getCountOfChapterTestPassed(idChapter, idProgress) > 0;
+    }
+
+    public List<Object> getPreviousTestAttempts(Long idChapter, Long idProgress){
+        List<TestAttempt> testAttempts = repository.getPreviousTestAttempts(idChapter, idProgress);
+        return testAttemptService.present(testAttempts);
+    }
+    public QuestionErrorType getTypeOfMostErrors(User user){
+        return repository.getTypeOfMostErrors(user.getId());
     }
 
 }

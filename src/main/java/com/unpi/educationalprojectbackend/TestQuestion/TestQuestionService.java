@@ -8,6 +8,7 @@ import org.hibernate.ObjectNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -28,8 +29,15 @@ public class TestQuestionService {
     }
 
     public void delete(TestQuestion object){
+        repository.deleteFromTestAttempts(object.getId());
         repository.delete(object);
     }
+
+    public boolean isAnswerCorrect(Long idQuestion, Long idAnswer){
+        Long idCorrectAnswer = repository.getCorrectAnswerOfQuestion(idQuestion);
+        return Objects.equals(idAnswer, idCorrectAnswer);
+    }
+
     public List<TestAnswer> getTestAnswers(TestQuestion question){
         return repository.getTestAnswers(question.getId());
     }

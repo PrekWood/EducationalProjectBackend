@@ -10,6 +10,7 @@ import com.unpi.educationalprojectbackend.SubChapter.SubChapter;
 import com.unpi.educationalprojectbackend.SubChapter.SubChapterService;
 import com.unpi.educationalprojectbackend.TestAnswer.TestAnswer;
 import com.unpi.educationalprojectbackend.TestAnswer.TestAnswerService;
+import com.unpi.educationalprojectbackend.TestAttempt.TestAttempt;
 import com.unpi.educationalprojectbackend.TestQuestion.TestQuestion;
 import com.unpi.educationalprojectbackend.TestQuestion.TestQuestionService;
 import com.unpi.educationalprojectbackend.User.User;
@@ -52,6 +53,20 @@ public class ChapterController extends ResponseHandler {
         }
 
         List<Chapter> chapterList = chapterService.getAll();
+
+        for (Chapter chapter:chapterList) {
+            chapter.setBestTestAttempt(
+                chapterService.getBestTestAttempt(chapter,loggedInUser)
+            );
+            if(loggedInUser.getRole().equals(UserRole.ADMIN)){
+                chapter.setCompetionRate(
+                    chapterService.getCompetionRate(chapter)
+                );
+            }
+        }
+
+
+
         return createSuccessResponse(chapterService.present(chapterList));
     }
 

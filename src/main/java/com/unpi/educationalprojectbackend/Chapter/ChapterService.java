@@ -1,12 +1,13 @@
 package com.unpi.educationalprojectbackend.Chapter;
 
+import com.unpi.educationalprojectbackend.ChapterGrade.enums.GRADES;
 import com.unpi.educationalprojectbackend.SubChapter.SubChapter;
 import com.unpi.educationalprojectbackend.Test.Test;
 import com.unpi.educationalprojectbackend.TestQuestion.TestQuestion;
+import com.unpi.educationalprojectbackend.User.User;
 import com.unpi.educationalprojectbackend.UserProgress.UserProgress;
 import com.unpi.educationalprojectbackend.UserProgress.UserProgressService;
 import lombok.AllArgsConstructor;
-import org.hibernate.Cache;
 import org.hibernate.ObjectNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -93,7 +94,9 @@ public class ChapterService {
 
         for (Chapter chapter: chapterList) {
 
-            // TODO check if intro is readed
+            if(!userProgressService.isChapterIntroPassed(chapter.getId(), progress.getId())){
+                return chapter;
+            }
 
             // Get the first subchapter that is not passed
             List<SubChapter> subChapterList = repository.getSubChapters(chapter.getId());
@@ -109,8 +112,13 @@ public class ChapterService {
             }
         }
 
-        // Get the next chapter
-        return null;
+        return "FINISH";
     }
 
+    public GRADES getBestTestAttempt(Chapter chapter, User user){
+        return repository.getBestTestAttempt(chapter.getId(),user.getId());
+    }
+    public Float getCompetionRate(Chapter chapter){
+        return repository.getCompletionRate(chapter.getId());
+    }
 }

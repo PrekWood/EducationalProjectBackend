@@ -31,7 +31,6 @@ public class TestQuestion {
     @OneToOne
     private TestAnswer correctAnswer;
 
-
     public TestQuestion() {
         this.dateAdd = new Date();
     }

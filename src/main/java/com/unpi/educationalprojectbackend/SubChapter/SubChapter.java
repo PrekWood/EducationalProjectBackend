@@ -16,7 +16,11 @@ public class SubChapter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String theory;
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String examples;
     private String name;
 

@@ -18,10 +18,7 @@ import lombok.AllArgsConstructor;
 import org.hibernate.ObjectNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
@@ -37,7 +34,7 @@ public class UserProgressController extends ResponseHandler {
     public ChapterGradeService chapterGradeService;
 
     @PutMapping("progress/chapter/{idChapter}/")
-    public ResponseEntity<?> update(@PathVariable Long idChapter) {
+    public ResponseEntity<?> markChapterAsRead(@PathVariable Long idChapter) {
 
         // Search for user
         User loggedInUser = userService.loadUserFromJwt();
@@ -65,6 +62,42 @@ public class UserProgressController extends ResponseHandler {
         getNextObjectAsCurrent(progress);
 
         return createSuccessResponse(chapterService.present(chapter));
+    }
+
+    @PutMapping("progress/test/{idChapter}/")
+    public ResponseEntity<?> markTestAsRead(@PathVariable Long idChapter, @RequestParam GRADES grade) {
+
+        // Search for user
+        User loggedInUser = userService.loadUserFromJwt();
+        if (loggedInUser == null) {
+            return createErrorResponse(HttpStatus.FORBIDDEN, "Δεν είστε συνδεδεμένος");
+        }
+
+        // Search for chapter
+        Chapter chapter = null;
+        try{
+            chapter = chapterService.find(idChapter);
+        }catch (ObjectNotFoundException e){
+            return createErrorResponse("Το id του κεφαλαίου δεν είναι σωστό");
+        }
+
+        UserProgress progress = loggedInUser.getProgress();
+
+        ChapterGrade chapterGrade = new ChapterGrade();
+        chapterGrade.setIdObject(chapter.getId());
+        chapterGrade.setUserProgress(progress);
+        chapterGrade.setObjectType(TYPE.TEST);
+        chapterGrade.setGrade(grade);
+        chapterGradeService.save(chapterGrade);
+
+        boolean hasFinished = getNextObjectAsCurrent(progress);
+        boolean alreadyShownModal = progress.isShowFinishedModal();
+        boolean showFinishModal = hasFinished && !alreadyShownModal;
+        if(showFinishModal){
+            progress.setShowFinishedModal(true);
+            userProgressService.save(progress);
+        }
+        return createSuccessResponse(showFinishModal);
     }
 
     @PutMapping("progress/subchapter/{idSubChapter}/")
@@ -98,9 +131,10 @@ public class UserProgressController extends ResponseHandler {
         return createSuccessResponse();
     }
 
-    void getNextObjectAsCurrent(UserProgress progress){
+    boolean getNextObjectAsCurrent(UserProgress progress){
 
         // Calculate next object
+        boolean hasFinished = false;
         Object nextObject = chapterService.getNextInPath(progress);
         if(nextObject instanceof Chapter){
             progress.setNextObjectType(TYPE.CHAPTER);
@@ -108,11 +142,17 @@ public class UserProgressController extends ResponseHandler {
         } else if (nextObject instanceof SubChapter) {
             progress.setNextObjectType(TYPE.SUBCHAPTER);
             progress.setNextObjectId(((SubChapter)nextObject).getId());
+        } else if (nextObject instanceof String && nextObject.equals("FINISH")) {
+            progress.setNextObjectType(null);
+            progress.setNextObjectId((long) -1);
+            hasFinished = true;
         } else {
             progress.setNextObjectType(TYPE.TEST);
             progress.setNextObjectId(((Test)nextObject).getChapter().getId());
         }
 
         userProgressService.save(progress);
+
+        return hasFinished;
     }
 }
